@@ -1,0 +1,418 @@
+# Copyright 2019 Diffblue Limited. All Rights Reserved.
+buildCmd: "gradle build -x test"
+testCmd: true
+cbmcArguments:
+  # Constrain the size of arrays created in the analyzed code.
+  java-max-vla-length: 100000
+  # Set a limit on the number of instructions that can be generated as part of a test trace.
+  depth: false
+  # Strategy for test object generation
+  java-test-input-factory: false
+  # Allow up to N mutator calls after a test input constructor (default 0)
+  java-test-input-factory-bmc-max-mutators: false
+  # Limit input factory recursive depth
+  java-test-input-factory-bmc-recursion-limit: false
+  # Do not generate coverage comments on generated tests.
+  java-generate-no-comments: true
+  # For an accessible function under test that returns a primitive, boxed primitive,
+  # string or null value, prints its call inlined into the assertion on the return value
+  inline-into-assertion: true
+  # For function arguments that are primitive, boxed primitive, string or null value, prints
+  # them inlined into the call to the function under test.
+  inline-function-arguments: true
+  # Do not generate tests for methods with the specified access modifier
+  do-not-test-methods-with-access: [private]
+  # alias for --cover-only function
+  cover-function-only: false
+  # Only add coverage goals to (i.e. "instrument") functions satisfying criterion C
+  cover-only: file
+phases:
+  # Phase 0
+  - timeout: 150
+    cbmcArguments:
+      # Use simple models first containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Instantiate classes using the simplest constructor strategy
+      smart-harness: simplest-constructor-and-nondet
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that char and strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+      # Set string input value
+      string-input-value: ["foo", "a/b/c", "a'b'c", ",", "/", "'"]
+      # Only initialize numerical primitive-typed parameter to an entry point within the given range
+      java-assume-inputs-interval: "[2:999999]"
+      # Force float and double inputs to have integer values.
+      java-assume-inputs-integral: true
+  # Phase 1
+  - timeout: 150
+    cbmcArguments:
+      # Use simple models first containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that char and strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+      # Set string input value
+      string-input-value: "foo"
+      # Only initialize numerical primitive-typed parameter to an entry point within the given range
+      java-assume-inputs-interval: "[-999999:-2]"
+      # Force float and double inputs to have integer values.
+      java-assume-inputs-integral: true
+  # Phase 2
+  - timeout: 150
+    cbmcArguments:
+      # Use standard diffblue models library
+      classpath: '/tools/cbmc/models.jar:.'
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: false
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Bound the length of input strings.
+      max-nondet-string-length: 100
+      # Add constraint that char and strings are printable
+      string-printable: false
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 3
+  # Phase 3
+  - timeout: 150
+    cbmcArguments:
+      # Use simple models first containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Instantiate classes using the simplest constructor strategy
+      smart-harness: simplest-constructor-and-nondet
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that char and strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+  # Phase 4
+  - timeout: 150
+    cbmcArguments:
+      # Use simple models first containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that char and strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+  # Phase 5
+  - timeout: 150
+    cbmcArguments:
+      # Use simple models first containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: false
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 20
+      # Bound the length of input strings.
+      max-nondet-string-length: 50
+      # Add constraint that char and strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 2
+  # Phase 6
+  - timeout: 100
+    cbmcArguments:
+      # Use standard diffblue models library
+      classpath: '/tools/cbmc/models.jar:.'
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: false
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Bound the length of input strings.
+      max-nondet-string-length: 100
+      # Explores the program tree breadth-first.
+      paths: fifo
+      # No constraint that char and strings are printable
+      string-printable: false
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: false
+  # Phase 7
+  - timeout: 150
+    cbmcArguments:
+      # Use standard diffblue models library
+      classpath: '/tools/cbmc/models.jar:.'
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: false
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Bound the length of input strings.
+      max-nondet-string-length: 100
+      # No constraint that char and strings are printable
+      string-printable: false
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: true
+      # Set an upper bound on loop unwinding
+      unwind: 3
+units:
+ - target:
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/factory/Restrictions.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/factory/Restrictions.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$SizeLessThan.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$SizeEquals.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$IdEquals.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$RLike.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$GreaterThan.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$NotIn.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$LessThanEquals.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$NotEquals.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$Conjunction.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$ILike.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$IsFalse.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$Junction.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$EqualsProperty.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$GreaterThanEqualsProperty.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$SubqueryCriterion.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$Equals.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$Contains.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$In.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$LessThanProperty.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$IsNull.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$SizeGreaterThanEquals.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$GreaterThanEquals.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$Between.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$Criterion.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$PropertyComparisonCriterion.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$PropertyCriterion.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$EndsWith.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$Like.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$IsNotEmpty.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$IsTrue.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$IsNotNull.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$LessThanEqualsProperty.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$SizeNotEquals.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryParameter.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryParameter.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$GreaterThanProperty.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$PropertyNameCriterion.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$Disjunction.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$NotEqualsProperty.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$StartsWith.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$LessThan.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$SizeLessThanEquals.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$SizeGreaterThan.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$IsEmpty.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+ - target:
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/factory/Projections.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/factory/Projections.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$GroupPropertyProjection.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$DistinctPropertyProjection.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$SumProjection.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$MinProjection.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$IdProjection.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$MaxProjection.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$CountProjection.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$PropertyProjection.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$DistinctProjection.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$AvgProjection.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$Projection.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
+   - dir: data-model/build/classes/java/main
+     file: io/micronaut/data/model/query/QueryModel$CountDistinctProjection.class
+     sourceDir: data-model/src/main/java
+     sourceFile: io/micronaut/data/model/query/QueryModel.java
